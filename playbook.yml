@@ -1,0 +1,60 @@
+---
+- hosts: all
+  remote_user: vagrant
+  tasks:
+    - name: install packages
+      become: true
+      apt:
+        name:
+        - build-essential
+        - automake
+        - autoconf
+        - git
+        - squashfs-tools
+        - ssh-askpass
+        - libssl-dev
+        - libncurses5-dev
+        - bc
+        - m4
+        - unzip
+        - cmake
+        - python
+        - picocom
+        - libwxgtk3.0-dev
+        - libgl1-mesa-dev
+        - libglu1-mesa-dev
+        - libglfw3
+        - libglfw3-dev
+        - libglew2.0
+        - libglew-dev
+        - fop
+        - xsltproc
+        - libxml2-utils
+        - curl
+        update_cache: yes
+    - name: download fwup
+      get_url:
+        url: https://github.com/fhunleth/fwup/releases/download/v1.3.1/fwup_1.3.1_amd64.deb
+        dest: ./fwup_1.3.1_amd64.deb
+        force: true
+    - name: install fwup
+      apt:
+        deb: ./fwup_1.3.1_amd64.deb
+    - name: git clone asdf
+      git:
+        repo: https://github.com/asdf-vm/asdf.git
+        dest:  /home/vagrant/.asdf
+        depth: 1
+        version: v0.7.1
+    - name: set env vars
+      lineinfile:
+        dest: /home/vagrant/.bashrc
+        state: present
+        line: "{{ item.line }}"
+      with_items:
+      - line: . $HOME/.asdf/completions/asdf.bash
+        regexp: '^ \. \$HOME/\.asdf/completions/asdf\.bash'
+      - line: . $HOME/.asdf/asdf.sh
+        regexp: '^ \. \$HOME/\.asdf/asdf\.sh'
+    - name: install elixir
+      script: ./install_elixir.sh
